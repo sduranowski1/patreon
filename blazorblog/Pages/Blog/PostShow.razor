@@ -1,0 +1,95 @@
+@page "/post/{postId:int}"
+
+@inject PostService PostService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@using blazorblog.Services
+@using blazorblog.Models
+@inject IConfiguration Configuration
+
+<h1>Post Details</h1>
+
+@if (post == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="post-details">
+        @if (!string.IsNullOrEmpty(post.ImageFileName))
+        {
+            <img src="@($"{_apiBaseUrl}/Uploads/{post.ImageFileName}")" alt="Post Image" style="max-width:300px;" />
+        }
+        <h2>@post.Title</h2>
+        <p>@post.Content</p>
+        <p><strong>Created At:</strong> @post.CreatedAt.ToLocalTime().ToString("f")</p>
+    </div>
+
+
+    <!-- Return Button -->
+    <button @onclick="ReturnToPosts">Return to Posts</button>
+}
+
+    <!-- Disqus Section -->
+    <div id="disqus_thread"></div>
+
+@code {
+    
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+        // Ensure the API base URL is loaded correctly
+        if (string.IsNullOrEmpty(_apiBaseUrl))
+        {
+            Console.WriteLine("API base URL is not configured!");
+        }
+    }
+
+    [Parameter]
+    public int postId { get; set; }
+
+    private Post post;
+    private bool disqusLoaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await PostService.GetPostByIdAsync(postId);
+    }
+
+        // Navigate back to the posts list
+    private void ReturnToPosts()
+    {
+        NavigationManager.NavigateTo("/posts");
+    }
+
+    // Inject Disqus script after the component renders
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !disqusLoaded)
+        {
+            await LoadDisqus();
+            disqusLoaded = true;
+        }
+    }
+
+    // Load the Disqus comments
+    private async Task LoadDisqus()
+    {
+        var disqusConfigScript = $@"
+            (function() {{
+                var disqus_config = function () {{
+                    this.page.url = window.location.href;  
+                    this.page.identifier = '{postId}';
+                }};
+                var d = document, s = d.createElement('script');
+                s.src = 'https://blazorblog.disqus.com/embed.js';
+                s.setAttribute('data-timestamp', +new Date());
+                (d.head || d.body).appendChild(s);
+            }})();
+        ";
+
+        await JSRuntime.InvokeVoidAsync("eval", disqusConfigScript);
+    }
+}

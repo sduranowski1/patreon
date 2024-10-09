@@ -1,0 +1,65 @@
+@page "/admin/pizzas"
+@using blazorblog.Models
+@using blazorblog.Services
+@inject PizzaService PizzaService
+@inject IConfiguration Configuration
+@inherits blazorblog.Shared.ProtectedPageBase
+
+
+<h3>Pizza List</h3>
+
+@if (pizzas == null)
+{
+    <p>Loading...</p>
+}
+else if (!pizzas.Any())
+{
+    <p>No pizzas available.</p>
+}
+else
+{
+    <ul>
+        @foreach (var pizza in pizzas)
+        {
+            <li>
+                <strong>@pizza.Name</strong> - Gluten Free: @(pizza.IsGlutenFree ? "Yes" : "No")
+            </li>
+        }
+    </ul>
+}
+
+@inject HttpClient Http
+
+@code {
+    private List<Pizza> pizzas;
+
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync(); // Call the base class async logic
+
+        if (await AuthService.IsLoggedIn()) // Properly await the async call
+        {
+            try
+            {
+                // pizzas = await Http.GetFromJsonAsync<List<Pizza>>("https://localhost:7154/api/Pizzas");
+                pizzas = await Http.GetFromJsonAsync<List<Pizza>>($"{_apiBaseUrl}/api/Pizzas");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching data: {ex.Message}");
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/login"); // Redirect if not authenticated
+        }
+    }
+    
+}

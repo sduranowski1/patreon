@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject AuthService AuthService // Ensure this is included
+
+<div class="page">
+    @if (IsAdminPage)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+    <main>
+        <div class="top-row px-4 d-flex align-items-center justify-content-between">
+            <!-- Logo on the left -->
+            @if (!IsAdminPage)
+            {
+            <a href="/" class="logo-link">
+                <img src="images/roncee_outline.png" alt="Logo" class="logo" />
+            </a>
+            }
+            <!-- Navigation Links -->
+            <div class="ms-auto"> <!-- Add this class to push the links to the right -->
+                <a href="/store">Store</a>
+                @if (!isLoggedIn) // Check if the user is NOT logged in
+                {
+                    <a href="/login">Log in</a>
+                }
+                else
+                {
+                    <a href="/dashboard">Dashboard</a>
+                    <a class="btn-link" role="button" @onclick="HandleLogout">Log out</a>
+                }
+                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            </div>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+
+
+</div>
+    @if (!IsAdminPage)
+    {
+        <Footer />
+    }
+
+@code {
+
+    private bool isLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoggedIn = await AuthService.IsLoggedIn();
+        Console.WriteLine($"Is Logged In: {isLoggedIn}"); // Debugging line
+    }
+
+    private bool IsAdminPage => Navigation.Uri.Contains("/admin");
+
+    private async Task HandleLogout()
+    {
+        await AuthService.Logout(); // Call the logout method
+        Navigation.NavigateTo(Navigation.Uri, true); // Refresh the current page
+    }
+}

@@ -1,0 +1,60 @@
+@page "/posts"
+
+@inject IConfiguration Configuration
+@inject PostService PostService
+@using blazorblog.Models
+@using blazorblog.Services
+
+
+<h1>Posts</h1>
+
+@if (posts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (posts.Count == 0)
+{
+    <p>No posts available.</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div class="post">
+            @if (!string.IsNullOrEmpty(post.ImageFileName))
+                {
+                    // <img src="@($"https://localhost:7154/Uploads/{post.ImageFileName}")" alt="Post Image" style="max-width:200px;" />
+                    <img src="@($"{_apiBaseUrl}/Uploads/{post.ImageFileName}")" alt="Post Image" style="max-width:200px;" />
+                }
+            <h2 class="post-title"><a href="/post/@post.Id">@post.Title</a></h2> <!-- Link to individual post page -->
+            <p class="post-content">@post.Content</p>
+            <!-- <p><strong>Author:</strong> @post.Author?.Username ?? "Unknown"</p> -->
+            <p><strong>Created At:</strong> @post.CreatedAt.ToLocalTime().ToString("f")</p>
+        </div>
+    }
+}
+
+@code {
+    
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+        // Ensure the API base URL is loaded correctly
+        if (string.IsNullOrEmpty(_apiBaseUrl))
+        {
+            Console.WriteLine("API base URL is not configured!");
+        }
+    }
+
+    private List<Post> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        posts = await PostService.GetPostsAsync();
+
+    }
+    
+}

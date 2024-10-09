@@ -1,0 +1,17 @@
+# Blazor WASM .gitignore
+
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore temporary files
+*.user
+*.vs
+.vscode/
+
+# Ignore sensitive configuration (if any)
+secrets.json
+
+# Ignore package manager directories
+node_modules/
+wwwroot/lib/

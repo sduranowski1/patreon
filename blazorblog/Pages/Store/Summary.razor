@@ -1,0 +1,102 @@
+@page "/checkout/order-summary"
+
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="mb-4">Order Summary</h2>
+
+            <!-- Order Details -->
+            <div class="card mb-4">
+                <div class="card-header">Order Details</div>
+                <div class="card-body">
+                    <p><strong>Order Number:</strong> @OrderNumber</p>
+                    <p><strong>Date:</strong> @OrderDate.ToString("MMMM dd, yyyy")</p>
+                    <p><strong>Status:</strong> @OrderStatus</p>
+                </div>
+            </div>
+
+            <!-- Shipping Details -->
+            <div class="card mb-4">
+                <div class="card-header">Shipping Details</div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> @CustomerName</p>
+                    <p><strong>Address:</strong> @ShippingAddress</p>
+                    <p><strong>Email:</strong> @CustomerEmail</p>
+                    <p><strong>Phone:</strong> @CustomerPhone</p>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="card mb-4">
+                <div class="card-header">Payment Method</div>
+                <div class="card-body">
+                    <p><strong>Payment Type:</strong> @PaymentType (**** **** **** @PaymentLast4)</p>
+                    <p><strong>Total Amount:</strong> @TotalAmount.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="col-lg-4">
+            <h4 class="mb-4">Items Ordered</h4>
+            <ul class="list-group mb-4">
+                @foreach (var item in OrderItems)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @item.ProductName
+                        <span class="badge bg-primary rounded-pill">@item.Price.ToString("C")</span>
+                    </li>
+                }
+            </ul>
+
+            <!-- Summary -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <p class="d-flex justify-content-between"><span>Subtotal:</span><span>@Subtotal.ToString("C")</span></p>
+                    <p class="d-flex justify-content-between"><span>Shipping:</span><span>@ShippingCost.ToString("C")</span></p>
+                    <p class="d-flex justify-content-between"><span>Tax:</span><span>@TaxAmount.ToString("C")</span></p>
+                    <hr>
+                    <h5 class="d-flex justify-content-between"><span>Total:</span><span>@TotalAmount.ToString("C")</span></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Order Information
+    private string OrderNumber = "#123456";
+    private DateTime OrderDate = DateTime.Now;
+    private string OrderStatus = "Processing";
+
+    // Customer Information
+    private string CustomerName = "John Doe";
+    private string ShippingAddress = "123 Main Street, City, State, ZIP";
+    private string CustomerEmail = "john.doe@example.com";
+    private string CustomerPhone = "(123) 456-7890";
+
+    // Payment Information
+    private string PaymentType = "Credit Card";
+    private string PaymentLast4 = "1234";
+    private decimal TotalAmount = 99.99m;
+    private decimal Subtotal = 99.97m;
+    private decimal ShippingCost = 0.00m;
+    private decimal TaxAmount = 0.02m;
+
+    // Order Items
+    private List<OrderItem> OrderItems = new List<OrderItem>
+    {
+        new OrderItem { ProductName = "Product 1", Price = 49.99m },
+        new OrderItem { ProductName = "Product 2", Price = 29.99m },
+        new OrderItem { ProductName = "Product 3", Price = 19.99m }
+    };
+
+    // OrderItem class to represent each item
+    public class OrderItem
+    {
+        public string ProductName { get; set; }
+        public decimal Price { get; set; }
+    }
+}

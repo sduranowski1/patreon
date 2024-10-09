@@ -1,0 +1,255 @@
+@page "/login"
+@using System.Net.Http
+@using System.Net.Http.Headers
+@using System.Text.Json
+@using System.Text
+@using blazorblog.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject IConfiguration Configuration
+
+
+<h3>Login</h3>
+
+<!-- <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm> -->
+
+
+<!-- Pills navs -->
+<!-- <ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link active" id="tab-login" data-mdb-pill-init href="#pills-login" role="tab"
+      aria-controls="pills-login" aria-selected="true">Login</a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" id="tab-register" data-mdb-pill-init href="#pills-register" role="tab"
+      aria-controls="pills-register" aria-selected="false">Register</a>
+  </li>
+</ul> -->
+<!-- Pills navs -->
+
+<!-- Pills content -->
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+      <div class="text-center mb-3">
+        <!-- <p>Sign in with:</p>
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-facebook-f"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-google"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-twitter"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-github"></i>
+        </button> -->
+      </div>
+
+      <!-- <p class="text-center">or:</p> -->
+
+      <!-- Email input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <InputText @bind-Value="loginModel.Username" class="form-control" />
+        <label class="form-label" for="loginName">Email or username</label>
+      </div>
+
+      <!-- Password input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <InputText @bind-Value="loginModel.Password" class="form-control"  type="password" />
+        <label class="form-label" for="loginPassword">Password</label>
+      </div>
+
+      <!-- 2 column grid layout -->
+      <div class="row mb-4">
+        <div class="col-md-6 d-flex justify-content-center">
+          <!-- Checkbox -->
+          <div class="form-check mb-3 mb-md-0">
+            <!-- <input class="form-check-input" type="checkbox" value="" id="loginCheck" checked /> -->
+            <!-- <label class="form-check-label" for="loginCheck"> Remember me </label> -->
+          </div>
+        </div>
+
+        <div class=" d-flex justify-content-center">
+          <!-- Simple link -->
+          <a href="#!">Forgot password?</a>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">Sign in</button>
+
+      <!-- Register buttons -->
+      <div class="text-center">
+        <p>Not a member? <a href="#!">Register</a></p>
+      </div>
+    </EditForm>
+  </div>
+  <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="tab-register">
+    <form>
+      <div class="text-center mb-3">
+        <p>Sign up with:</p>
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-facebook-f"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-google"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-twitter"></i>
+        </button>
+
+        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
+          <i class="fab fa-github"></i>
+        </button>
+      </div>
+
+      <p class="text-center">or:</p>
+
+      <!-- Name input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <input type="text" id="registerName" class="form-control" />
+        <label class="form-label" for="registerName">Name</label>
+      </div>
+
+      <!-- Username input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <input type="text" id="registerUsername" class="form-control" />
+        <label class="form-label" for="registerUsername">Username</label>
+      </div>
+
+      <!-- Email input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <input type="email" id="registerEmail" class="form-control" />
+        <label class="form-label" for="registerEmail">Email</label>
+      </div>
+
+      <!-- Password input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <input type="password" id="registerPassword" class="form-control" />
+        <label class="form-label" for="registerPassword">Password</label>
+      </div>
+
+      <!-- Repeat Password input -->
+      <div data-mdb-input-init class="form-outline mb-4">
+        <input type="password" id="registerRepeatPassword" class="form-control" />
+        <label class="form-label" for="registerRepeatPassword">Repeat password</label>
+      </div>
+
+      <!-- Checkbox -->
+      <div class="form-check d-flex justify-content-center mb-4">
+        <input class="form-check-input me-2" type="checkbox" value="" id="registerCheck" checked
+          aria-describedby="registerCheckHelpText" />
+        <label class="form-check-label" for="registerCheck">
+          I have read and agree to the terms
+        </label>
+      </div>
+
+      <!-- Submit button -->
+      <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-3">Sign in</button>
+    </form>
+  </div>
+</div>
+<!-- Pills content -->
+
+@if (!string.IsNullOrEmpty(token))
+{
+    <p>Token: @token</p>
+}
+
+@code {
+
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+        // Ensure the API base URL is loaded correctly
+        if (string.IsNullOrEmpty(_apiBaseUrl))
+        {
+            Console.WriteLine("API base URL is not configured!");
+        }
+    }
+
+    private LoginModel loginModel = new LoginModel();
+    private string token;
+
+    private async Task HandleLogin()
+    {
+        // Simulate a login request
+        // var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7154/api/users/authenticate");
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_apiBaseUrl}/api/users/authenticate");
+
+        request.Content = new StringContent(JsonSerializer.Serialize(loginModel), Encoding.UTF8, "application/json");
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (result != null && !string.IsNullOrEmpty(result.token)) // Ensure token is valid
+            {
+                await AuthService.SaveToken(result.token); // Save the token
+                Console.WriteLine($"Token Saved: {result.token}"); // Debugging line
+                Navigation.NavigateTo(Navigation.Uri, true); // Refresh the current page
+            }
+            else
+            {
+                Console.WriteLine("Received invalid token from API.");
+            }
+        }
+        else
+        {
+            // Handle login failure
+            Console.WriteLine($"Login failed: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}"); // Output the status and error message
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.Logout(); // Call the logout method
+        Navigation.NavigateTo(Navigation.Uri, true); // Refresh the current page
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if the user is already logged in
+        bool isLoggedIn = await AuthService.IsLoggedIn();
+
+        if (isLoggedIn)
+        {
+            // If the user is logged in, navigate away from the login page
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    public class LoginResponse
+    {
+        public string token { get; set; }
+        public int id { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string username { get; set; }
+    }
+}

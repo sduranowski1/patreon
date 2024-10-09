@@ -1,0 +1,22 @@
+# Web API .gitignore
+
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore configuration files with sensitive data
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+
+# Ignore user-specific files
+*.user
+*.vs
+.vscode/
+
+# Ignore package manager directories
+node_modules/
+
+# Other
+posts.html

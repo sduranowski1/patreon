@@ -1,0 +1,226 @@
+@page "/store"
+
+@using blazorblog.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager Navigation
+@inject ProductService ProductService
+
+<!-- <div class="container"> -->
+    <div class="row pb-4">
+        <aside class="col-md-3">
+            <div class="card">
+                <article class="filter-group">
+                    <header class="card-header">
+                        <a href="#" @onclick="ToggleCollapse" data-target="#collapse_1" aria-expanded="true">
+                            <i class="icon-control fa fa-chevron-down"></i>
+                            <h6 class="title">Product type</h6>
+                        </a>
+                    </header>
+                    <div class="filter-content collapse show" id="collapse_1">
+                        <div class="card-body">
+                            <form class="form-inline d-flex my-2 my-lg-0">
+                                <input class="form-control mr-2" type="search" placeholder="Search">
+                                <button class="btn btn-outline-primary" type="submit">Search</button>
+                            </form>
+
+                            <ul class="list-menu">
+                                <li><a href="#">People</a></li>
+                                <li><a href="#">Watches</a></li>
+                                <li><a href="#">Cinema</a></li>
+                                <li><a href="#">Clothes</a></li>
+                                <li><a href="#">Home items</a></li>
+                                <li><a href="#">Animals</a></li>
+                            </ul>
+                        </div> <!-- card-body.// -->
+                    </div>
+                </article>
+                <article class="filter-group">
+		<header class="card-header">
+			<a href="#" data-toggle="collapse" data-target="#collapse_2" aria-expanded="true" class="">
+				<i class="icon-control fa fa-chevron-down"></i>
+				<h6 class="title">Brands </h6>
+			</a>
+		</header>
+		<div class="filter-content collapse show" id="collapse_2" style="">
+			<div class="card-body">
+				<label class="custom-control custom-checkbox">
+				  <input type="checkbox" checked="" class="custom-control-input">
+				  <div class="custom-control-label">Mercedes  
+				  	<b class="badge badge-pill badge-light float-right">120</b>  </div>
+				</label>
+				<label class="custom-control custom-checkbox">
+				  <input type="checkbox" checked="" class="custom-control-input">
+				  <div class="custom-control-label">Toyota 
+				  	<b class="badge badge-pill badge-light float-right">15</b>  </div>
+				</label>
+				<label class="custom-control custom-checkbox">
+				  <input type="checkbox" checked="" class="custom-control-input">
+				  <div class="custom-control-label">Mitsubishi 
+				  	<b class="badge badge-pill badge-light float-right">35</b> </div>
+				</label>
+				<label class="custom-control custom-checkbox">
+				  <input type="checkbox" checked="" class="custom-control-input">
+				  <div class="custom-control-label">Nissan 
+				  	<b class="badge badge-pill badge-light float-right">89</b> </div>
+				</label>
+				<label class="custom-control custom-checkbox">
+				  <input type="checkbox" class="custom-control-input">
+				  <div class="custom-control-label">Honda 
+				  	<b class="badge badge-pill badge-light float-right">30</b>  </div>
+				</label>
+	</div> <!-- card-body.// -->
+		</div>
+	</article> <!-- filter-group .// -->
+	<article class="filter-group">
+		<header class="card-header">
+			<a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true" class="">
+				<i class="icon-control fa fa-chevron-down"></i>
+				<h6 class="title">Price range </h6>
+			</a>
+		</header>
+		<div class="filter-content collapse show" id="collapse_3" style="">
+			<div class="card-body">
+				<input type="range" class="custom-range" min="0" max="100" name="">
+				<div class="form-row">
+				<div class="form-group col-md-6">
+				  <label>Min</label>
+				  <input class="form-control" placeholder="$0" type="number">
+				</div>
+				<div class="form-group text-right col-md-6">
+				  <label>Max</label>
+				  <input class="form-control" placeholder="$1,0000" type="number">
+				</div>
+				</div> <!-- form-row.// -->
+				<button class="btn btn-block btn-primary">Apply</button>
+			</div><!-- card-body.// -->
+		</div>
+	</article> <!-- filter-group .// -->
+	<article class="filter-group">
+		<header class="card-header">
+			<a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class="">
+				<i class="icon-control fa fa-chevron-down"></i>
+				<h6 class="title">Sizes </h6>
+			</a>
+		</header>
+		<div class="filter-content collapse show" id="collapse_4" style="">
+			<div class="card-body">
+			  <label class="checkbox-btn">
+			    <input type="checkbox">
+			    <span class="btn btn-light"> XS </span>
+			  </label>
+
+			  <label class="checkbox-btn">
+			    <input type="checkbox">
+			    <span class="btn btn-light"> SM </span>
+			  </label>
+
+			  <label class="checkbox-btn">
+			    <input type="checkbox">
+			    <span class="btn btn-light"> LG </span>
+			  </label>
+
+			  <label class="checkbox-btn">
+			    <input type="checkbox">
+			    <span class="btn btn-light"> XXL </span>
+			  </label>
+		</div><!-- card-body.// -->
+		</div>
+	</article> <!-- filter-group .// -->
+                <!-- Additional filter groups can be added similarly -->
+            </div> <!-- card.// -->
+        </aside>
+        <main class="col-md-9">
+            <header class="border-bottom mb-4 pb-3">
+                <div class="form-inline">
+                <span class="mr-md-auto">@products.Count() Items found</span>
+                    <select class="mr-2 form-control">
+                        <option>Latest items</option>
+                        <option>Trending</option>
+                        <option>Most Popular</option>
+                        <option>Cheapest</option>
+                    </select>
+                    <!-- <div class="btn-group">
+                        <a href="#" class="btn btn-outline-secondary"><i class="fa fa-bars"></i></a>
+                        <a href="#" class="btn btn-outline-secondary active"><i class="fa fa-th"></i></a>
+                    </div> -->
+                </div>
+            </header>
+
+            <div class="row">
+                @foreach (var product in products)
+                {
+                    <div class="col-md-4">
+                        <figure class="card card-product-grid p-3">
+                            <div class="img-wrap">
+                                <span class="badge badge-danger">NEW</span>
+                                <img src="@product.ImageUrl" class="img-fluid" />
+                                <!-- <img src="images/buy-me-a-coffee-icon.jpg" class="img-fluid" /> -->
+                                <!-- <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button> -->
+                            </div>
+                            <figcaption class="info-wrap">
+                                <div class="fix-height">
+                                    <a href="#" class="title">@product.Name</a>
+                                    <div class="price-wrap mt-2">
+                                        <span class="price">$@product.Price</span>
+                                        <!-- @if (product.OldPrice.HasValue)
+                                        {
+                                            <del class="price-old">$@product.OldPrice.Value</del>
+                                        } -->
+                                    </div>
+                                </div>
+                                <button class="btn btn-block btn-primary" @onclick="() => NavigateToProduct(product.Id)">See product</button>
+                            </figcaption>
+                        </figure>
+                    </div>
+                }
+            </div> <!-- row.// -->
+        </main>
+    </div>
+<!-- </div> -->
+
+@code {
+    private string searchQuery = string.Empty;
+    private List<Product> products = new List<Product>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await FetchProducts();
+    }
+
+    private async Task<List<Product>> FetchProducts()
+    {
+        return await ProductService.GetProductsAsync();
+    }
+
+    private void NavigateToProduct(int productId)
+    {
+        // Navigate to the product's individual page using its ID
+        Navigation.NavigateTo($"/store/{productId}");
+    }
+
+
+
+    private void Search()
+    {
+        // Implement search logic
+    }
+
+    private void ToggleCollapse()
+    {
+        // Implement collapse logic
+    }
+
+    private void AddToCart(Product product)
+    {
+        // Add product to cart logic
+    }
+
+    <!-- private class Product
+    {
+        public int Id { get; set; } // Added Id property
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public decimal? OldPrice { get; set; }
+        public string ImageUrl { get; set; }
+    } -->
+}

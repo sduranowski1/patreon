@@ -1,0 +1,76 @@
+@page "/cart"
+@inject CartService CartService
+@inject NavigationManager Navigation
+
+<div class="row">
+    <div class="col-sm-12 col-md-offset-1">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Total</th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in CartService.GetCartItems())
+                {
+                
+                    <tr>
+                        <td class="col-sm-8 col-md-6">
+                            <div class="media">
+                                <img class="media-object" src="@item.Product.ImageUrl" style="width: 72px; height: 72px;" />
+                                <div class="media-body">
+                                    <h4 class="media-heading">@item.Product.Name</h4>
+                                    <!-- <h5 class="media-heading"> by @item.Product.Brand</h5> -->
+                                    <!-- <span>Status: <strong>@item.Product.Status</strong></span> -->
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-sm-1 col-md-1" style="text-align: center">
+                            <input type="number" class="form-control" value="@item.Quantity" @oninput="e => UpdateQuantity(item, int.Parse(e.Value.ToString()))" />
+                        </td>
+                        <td class="col-sm-1 col-md-1 text-center">
+                            <strong>@item.Product.Price.ToString("C")</strong>
+                        </td>
+                        <td class="col-sm-1 col-md-1 text-center">
+                            <strong>@(item.Product.Price * item.Quantity).ToString("C")</strong>
+                        </td>
+                        <td class="col-sm-1 col-md-1">
+                            <button class="btn btn-danger" @onclick="() => RemoveItem(item)">Remove</button>
+                        </td>
+                    </tr>
+                }
+
+                
+
+            </tbody>
+        </table>
+        <div class="align-items-end">
+            <h3>Total: @CartService.GetCartTotal().ToString("C")</h3>
+            <button type="button" class="btn btn-primary" @onclick="GoToCheckout">
+                        Checkout <span class="glyphicon glyphicon-play"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void RemoveItem(CartItem item)
+    {
+        CartService.RemoveFromCart(item);
+    }
+
+    private void UpdateQuantity(CartItem item, int newQuantity)
+    {
+        CartService.UpdateQuantity(item, newQuantity);
+    }
+
+    private void GoToCheckout()
+    {
+        // Use the injected Navigation instance to navigate
+        Navigation.NavigateTo("/checkout");
+    }
+}

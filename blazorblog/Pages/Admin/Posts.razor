@@ -1,0 +1,162 @@
+@page "/admin/posts"
+
+@inherits blazorblog.Shared.ProtectedPageBase
+
+@inject PostService PostService
+@using blazorblog.Models
+@using blazorblog.Services
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+
+
+<h1>Manage Posts</h1>
+
+@if (posts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (posts.Count == 0)
+{
+    <p>No posts available.</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div class="post">
+            <h2 class="post-title">@post.Title</h2>
+            <p class="post-content">@post.Content</p>
+            @if (!string.IsNullOrEmpty(post.ImageFileName))
+            {
+                // <img src="@($"https://localhost:7154/Uploads/{post.ImageFileName}")" alt="Post Image" style="max-width:200px;" />
+                <img src="@($"{_apiBaseUrl}/Uploads/{post.ImageFileName}")" alt="Post Image" style="max-width:200px;" />
+            }
+            <p><strong>Created At:</strong> @post.CreatedAt.ToLocalTime().ToString("f")</p>
+            <p><strong>Last Updated At:</strong> @post.UpdatedAt.ToLocalTime().ToString("f")</p>
+            <button @onclick="() => EditPost(post.Id)">Edit</button>
+            <button @onclick="() => DeletePost(post.Id)">Delete</button>
+        </div>
+    }
+}
+
+<button @onclick="AddNewPost">Add New Post</button>
+
+@if (isEditing || isCreating)
+{
+    <EditForm Model="@selectedPost" OnValidSubmit="SavePost">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Title:</label>
+            <InputText @bind-Value="selectedPost.Title" />
+        </div>
+
+        <div>
+            <label>Content:</label>
+            <InputTextArea @bind-Value="selectedPost.Content" />
+        </div>
+
+        <div>
+            <label>Image:</label>
+
+            @if (!string.IsNullOrEmpty(selectedPost.ImageFileName))
+            {
+                <!-- Display the current image if it exists -->
+                <div>
+                    <!-- <img src="@($"https://localhost:7154/Uploads/{selectedPost.ImageFileName}")" alt="Post Image" style="max-width: 200px;" /> -->
+                    <img src="@($"{_apiBaseUrl}/Uploads/{selectedPost.ImageFileName}")" alt="Post Image" style="max-width: 200px;" />
+                </div>
+            }
+
+            <!-- Optional file upload (only if the user wants to change the image) -->
+            <InputFile OnChange="HandleFileSelected" />
+        </div>
+
+        <button type="submit">Save</button>
+        <button @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<Post> posts;
+    private Post selectedPost = new Post();
+    private bool isCreating = false;
+    private bool isEditing = false;
+    private IBrowserFile imageFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (await AuthService.IsLoggedIn())
+        {
+            posts = await PostService.GetPostsAsync();
+        }
+        else
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+        // Ensure the API base URL is loaded correctly
+        if (string.IsNullOrEmpty(_apiBaseUrl))
+        {
+            Console.WriteLine("API base URL is not configured!");
+        }
+    }
+
+    private void AddNewPost()
+    {
+        selectedPost = new Post();
+        isCreating = true;
+    }
+
+    private async Task EditPost(int postId)
+    {
+        selectedPost = await PostService.GetPostByIdAsync(postId);
+        isEditing = true;
+    }
+
+    private async Task SavePost()
+    {
+        Console.WriteLine("Saving post...");
+        if (isCreating)
+        {
+            Console.WriteLine($"Creating new post with title: {selectedPost.Title}");
+            await PostService.CreatePostAsync(selectedPost, imageFile);
+            Console.WriteLine("Post created successfully.");
+        }
+        else if (isEditing)
+        {
+            Console.WriteLine($"Updating post with ID: {selectedPost.Id}");
+            await PostService.UpdatePostAsync(selectedPost.Id, selectedPost, imageFile);
+            Console.WriteLine("Post updated successfully.");
+        }
+        posts = await PostService.GetPostsAsync();
+    }
+
+    private async Task DeletePost(int postId)
+    {
+        await PostService.DeletePostAsync(postId);
+        posts = await PostService.GetPostsAsync();
+    }
+
+    private void CancelEdit()
+    {
+        isCreating = false;
+        isEditing = false;
+        selectedPost = new Post();
+        imageFile = null;
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File; // Store the selected file
+        Console.WriteLine($"File selected: {imageFile.Name}, Size: {imageFile.Size}"); // Log file details
+    }
+}

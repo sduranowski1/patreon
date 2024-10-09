@@ -1,0 +1,134 @@
+@page "/store/{id:int}"
+
+@using blazorblog.Services
+@inject NavigationManager Navigation
+@inject CartService CartService
+@inject ProductService ProductService
+
+<!-- <div class="container"> -->
+@if (product == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="row">
+        <!-- Product Image (Left-hand side) -->
+        <div class="col-md-5 item-photo">
+            <img style="max-width:100%;" src="@product.ImageUrl" />
+            <!-- <img style="max-width:100%;" src="images/buy-me-a-coffee-icon.jpg" /> -->
+        </div>
+        
+        <!-- Product Details (Right-hand side) -->
+        <div class="col-md-7">
+            <h3>@product.Name</h3>
+            <h5 style="color:#337ab7">
+                Sold by <a href="#">@product.Seller</a> · 
+                <small style="color:#337ab7">(@product.SalesCount sales)</small>
+            </h5>
+
+            <!-- Pricing -->
+            <h6 class="title-price"><small>DISCOUNT PRICE</small></h6>
+            <h3>$ @product.Price</h3>
+
+            <!-- Color Options -->
+            <div class="section">
+                <h6 class="title-attr"><small>COLOR</small></h6>                    
+                <div>
+                    @foreach (var color in product.ColorOptions)
+                    {
+                        <div class="attr" style="width:25px;background:@color;"></div>
+                    }
+                </div>
+            </div>
+
+            <!-- Capacities -->
+            <div class="section">
+                <h6 class="title-attr"><small>CAPACITY</small></h6>                    
+                <div>
+                    @foreach (var capacity in product.Capacities)
+                    {
+                        <div class="attr2">@capacity</div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="section">
+                <h6 class="title-attr"><small>QUANTITY</small></h6>                    
+                <div>
+                    <button class="btn-minus" @onclick="() => product.Quantity = Math.Max(product.Quantity - 1, 1)">
+                        <span class="glyphicon glyphicon-minus"></span>
+                    </button>
+                    <input value="@product.Quantity" />
+                    <button class="btn-plus" @onclick="() => product.Quantity++">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add to Cart Button -->
+            <div class="section">
+                <button class="btn btn-primary" @onclick="() => AddToCart(product, product.Quantity)">
+                    <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> 
+                    Add to Cart
+                </button>
+                <h6><a href="#"><span class="glyphicon glyphicon-heart-empty"></span> Add to Wishlist</a></h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Description (Below the image and details) -->
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="menu-items">
+                <li class="active">Product Details</li>
+                <li>Warranty</li>
+                <li>Seller</li>
+                <li>Shipping</li>
+            </ul>
+            <div style="width:100%;border-top:1px solid silver">
+                <p style="padding:15px;">
+                    <small>@product.Description</small>
+                </p>
+                <small>
+                    <ul>
+                        @foreach (var feature in product.Features)
+                        {
+                            <li>@feature</li>
+                        }
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+<!-- </div> -->
+}
+    
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Product product;
+
+    // Fetch product data when the component initializes
+    protected override async Task OnInitializedAsync()
+    {
+        product = await ProductService.GetProductByIdAsync(Id);
+    }
+
+    // Method to add a product to the cart
+    private void AddToCart(Product product, int quantity)
+    {
+        if (product != null && quantity > 0)
+        {
+            // You can also update the cart list or send this data to an API to manage the cart
+            CartService.AddToCart(product, quantity);
+            Console.WriteLine($"Added {product.Name} to the cart.");
+            // Navigate to the Cart page (e.g., "/cart")
+            Navigation.NavigateTo("/cart");
+        }
+    }
+}

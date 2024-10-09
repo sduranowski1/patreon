@@ -1,0 +1,173 @@
+@page "/checkout"
+@using blazorblog.Models
+@inject CartService CartService
+@inject CheckoutService CheckoutService
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+
+
+<main>
+    <div class="py-5 text-center">
+        <h2>Checkout form</h2>
+        <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
+    </div>
+
+    <div class="row g-5 pb-4">
+        <div class="col-md-5 col-lg-4 order-md-last">
+            <h4>Your Cart</h4>
+            <ul class="list-group mb-3">
+                @foreach (var item in CartService.GetCartItems())
+                {
+                    <li class="list-group-item d-flex justify-content-between lh-sm">
+                        <div>
+                            <h6 class="my-0">@item.Product.Name</h6>
+                            <small class="text-muted">@item.Product.Description</small>
+                        </div>
+                        <span class="text-muted">$@item.Product.Price</span>
+                    </li>
+                }
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Total (USD)</span>
+                    <strong>$@CartService.GetCartTotal()</strong>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-7 col-lg-8">
+            <h4 class="mb-3">Billing address</h4>
+            <EditForm Model="checkoutModel" OnValidSubmit="HandleCheckout">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="firstName" class="form-label">First name</label>
+                        <InputText class="form-control" id="firstName" @bind-Value="billingInfo.FirstName" required />
+                        <ValidationMessage For="@(() => billingInfo.FirstName)" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="lastName" class="form-label">Last name</label>
+                        <InputText class="form-control" id="lastName" @bind-Value="billingInfo.LastName" required />
+                        <ValidationMessage For="@(() => billingInfo.LastName)" />
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h4 class="mb-3">Payment</h4>
+                <InputRadioGroup @bind-Value="selectedPaymentMethod" Name="paymentMethod">
+                    <div class="form-check">
+                        <InputRadio id="stripe" Value="Stripe" class="form-check-input" />
+                        <label class="form-check-label" for="stripe">Stripe</label>
+                    </div>
+                    <div class="form-check">
+                        <InputRadio id="payu" Value="PayU" class="form-check-input" />
+                        <label class="form-check-label" for="payu">PayU</label>
+                    </div>
+                </InputRadioGroup>
+
+                <hr class="my-4">
+                <!-- Conditional rendering of the checkout button based on the selected payment method -->
+                @if (selectedPaymentMethod == Stripe)
+                {
+                    <button class="w-100 btn btn-primary btn-lg" type="button" @onclick="HandleCheckout">Checkout with Stripe</button>
+                }
+                else if (selectedPaymentMethod == PayU)
+                {
+                    <button class="w-100 btn btn-warning btn-lg" type="button" @onclick="ProcessPayUCheckout">Checkout with PayU</button>
+                }            
+            </EditForm>
+        </div>
+    </div>
+</main>
+
+@code {
+    private string _apiBaseUrl;
+
+    protected override void OnInitialized()
+    {
+        _apiBaseUrl = Configuration["Api:BaseUrl"];
+        // Ensure the API base URL is loaded correctly
+        if (string.IsNullOrEmpty(_apiBaseUrl))
+        {
+            Console.WriteLine("API base URL is not configured!");
+        }
+    }
+
+    private CheckoutFormModel checkoutModel = new CheckoutFormModel();
+    // Constants for payment methods
+    private const string PayU = "PayU";
+    private const string Stripe = "Stripe";
+
+    private string selectedPaymentMethod = Stripe; // Default selected method is Stripe
+
+    private BillingInfo billingInfo = new BillingInfo();
+
+
+    private void ProcessPayUCheckout()
+    {
+        // Logic for processing PayU payment
+        Console.WriteLine("Processing PayU payment...");
+    }
+
+    private async Task HandleCheckout()
+    {
+        try
+        {
+            // Prepare the items for checkout
+            checkoutModel.Items = CartService.GetCartItems()
+            .Select(item => new CartItem
+            {
+                Name = item.Product.Name,
+                Description = item.Product.Description,
+                Price = (long)(item.Product.Price * 100)  // Ensure you cast to long after multiplication
+            }).ToList();
+
+            checkoutModel.TotalPrice = (long)(CartService.GetCartTotal() * 100); // Convert total price to cents
+
+            checkoutModel.Currency = "usd"; // Adjust as necessary
+
+            // Build dynamic URLs based on the current URI
+            checkoutModel.SuccessUrl = $"{NavigationManager.Uri}/order-summary"; // Adjust this path as needed
+            checkoutModel.CancelUrl = $"{NavigationManager.Uri}/cancel"; // Adjust this path as needed
+
+
+            var response = await Http.PostAsJsonAsync($"{_apiBaseUrl}/checkout/create-checkout-session", checkoutModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var session = await response.Content.ReadFromJsonAsync<CheckoutSessionResponse>();
+
+                // Use JS interop to call Stripe.js and redirect to the checkout page
+                await JS.InvokeVoidAsync("redirectToCheckout", session.sessionId);
+            }
+
+            else
+            {
+                // Handle error response
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                // Display error message or log it
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions here
+        }
+    }
+
+    public class CheckoutSessionResponse
+    {
+        public string sessionId { get; set; }
+    }
+
+    private class BillingInfo
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Address { get; set; }
+        public string CardName { get; set; }
+        public string CardNumber { get; set; }
+        public string CardExpiration { get; set; }
+        public string CardCVV { get; set; }
+        public string PaymentMethod { get; set; }
+    }
+}
